@@ -1,0 +1,15 @@
+[package]
+name = "spindalis_macros"
+version = "0.1.2"
+edition = "2024"
+
+description = "Marco implementations for Spindalis"
+repository = "https://github.com/lignum-vitae/spindalis"
+license = "MIT"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+quote = "1.0.41"
+spindalis_core = { path = "../spindalis_core", version = ">=0.2.0" }
