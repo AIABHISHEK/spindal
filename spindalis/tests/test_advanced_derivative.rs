@@ -175,4 +175,40 @@ mod tests {
 
         assert_eq!(result, expected);
     }
+
+    #[test]
+    fn univariate_log_derivative() {
+        let parsed = Polynomial::parse("log(3x) + 2").unwrap();
+        let result = advanced_derivative(&parsed, "x").unwrap();
+        let expected = Polynomial::parse("log(3x)").unwrap();
+
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn multivariate_log_derivative() {
+        let parsed = Polynomial::parse("log(3xy) + 2z").unwrap();
+        let result = advanced_derivative(&parsed, "x").unwrap();
+        let expected = Polynomial::parse("log(3xy)").unwrap();
+
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn multivariate_log_derivative_2() {
+        let parsed = Polynomial::parse("2z + log(3xy)").unwrap();
+        let result = advanced_derivative(&parsed, "x").unwrap();
+        let expected = Polynomial::parse("log(3xy)").unwrap();
+
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn multivariate_log_null() {
+        let parsed = Polynomial::parse("log(3y) + 2z").unwrap();
+        let result = advanced_derivative(&parsed, "x").unwrap();
+        let expected = Polynomial::parse("0").unwrap();
+
+        assert_eq!(result, expected);
+    }
 }

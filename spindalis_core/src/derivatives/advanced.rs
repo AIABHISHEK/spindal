@@ -39,9 +39,12 @@ where
         Expr::Number(_)
         | Expr::Variable(_)
         | Expr::Constant(_)
-        | Expr::Function { func: _, inner: _ }
         | Expr::UnaryOpPostfix { op: _, value: _ }
         | Expr::UnaryOpPrefix { op: _, value: _ } => expr,
+        Expr::Function { func, inner } => Expr::Function {
+            func,
+            inner: Box::new(remove_extra_vars(*inner, var)),
+        },
         Expr::BinaryOp {
             op,
             lhs,
@@ -242,6 +245,7 @@ fn clear_num_var_literal(expr: Expr, var: &str) -> Expr {
     match &expr {
         Expr::Number(..) => Expr::Number(0.),
         Expr::Variable(v) if v != var => Expr::Number(0.),
+        Expr::Function { inner, .. } if !contains_var(inner, var) => Expr::Number(0.),
         _ => expr,
     }
 }
@@ -732,6 +736,29 @@ mod tests {
         let zeroed = remove_extra_vars(parsed.expr, "x");
         let result = fold_operations(zeroed);
         let expected = Polynomial::parse("(x+45)/(34+y)/y").unwrap();
+
+        assert_eq!(Polynomial { expr: result }, expected);
+    }
+
+    #[test]
+    fn function_log_derivative() {
+        let parsed = Polynomial::parse("log(3x) + 2z").unwrap();
+        let zeroed = remove_extra_vars(parsed.expr, "x");
+        let result = fold_operations(zeroed);
+        let expected = Polynomial::parse("log(3x)").unwrap();
+
+        assert_eq!(Polynomial { expr: result }, expected);
+    }
+
+    #[test]
+    fn function_log_null_return() {
+        let parsed = Polynomial::parse("log(3y) + 2z").unwrap();
+        let zeroed = remove_extra_vars(parsed.expr, "x");
+        let folded = fold_operations(zeroed);
+        let result = clear_num_var_literal(folded, "x");
+        let expected = Polynomial {
+            expr: Expr::Number(0.),
+        };
 
         assert_eq!(Polynomial { expr: result }, expected);
     }
